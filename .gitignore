@@ -1,0 +1,70 @@
+# Environments and Secrets
+.env
+.env.*
+*.env
+*.env.*
+backend/.env
+frontend/.env
+*.env.local
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# Large model weights and checkpoints
+*.pt
+*.onnx
+*.engine
+*.bin
+backend/models/
+models/
+
+# Python virtual environments & bytecode
+venv/
+.venv/
+backend/venv/
+backend/.venv/
+**/venv/
+**/.venv/
+__pycache__/
+backend/__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Node / Frontend builds
+node_modules/
+frontend/node_modules/
+**/node_modules/
+dist/
+frontend/dist/
+**/dist/
+.vite/
+frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Android build outputs and caches
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/.idea/
+frontend/android/*.iml
+frontend/android/app/*.iml
+frontend/android/local.properties
+frontend/android/captures/
+.externalNativeBuild/
+.cxx/
+
+# iOS build outputs and caches
+frontend/ios/App/Pods/
+frontend/ios/App/build/
+frontend/ios/App/.build/
+frontend/ios/App/*.xcworkspace/xcuserdata/
+frontend/ios/App/*.xcodeproj/xcuserdata/
+frontend/ios/App/*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+Desktop.ini
