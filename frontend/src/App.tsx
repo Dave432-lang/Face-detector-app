@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
 import {
   Camera,
   Upload,
@@ -11,8 +12,9 @@ import { Header } from './components/Header';
 import { SliderControl } from './components/SliderControl';
 import { DetectionCanvas } from './components/DetectionCanvas';
 import { ResultsSummary } from './components/ResultsSummary';
+import { WebcamModal } from './components/WebcamModal';
 import { checkBackendHealth, detectPeopleInImage } from './services/api';
-import { getPhoto } from './services/camera';
+import { getPhoto, type PhotoResult } from './services/camera';
 import type { BackendHealthResponse, DetectionItem, SpeedMetrics } from './types';
 
 // High quality sample image with people for instant testing
@@ -25,6 +27,7 @@ export function App() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageBlob, setImageBlob] = useState<Blob | null>(null);
   const [confidence, setConfidence] = useState<number>(0.25);
+  const [isWebcamOpen, setIsWebcamOpen] = useState<boolean>(false);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +84,13 @@ export function App() {
 
   const handleCapture = async (mode: 'camera' | 'photos') => {
     setError(null);
+
+    // If running in a web browser and "Take Photo" is clicked, open the live webcam modal!
+    if (mode === 'camera' && !Capacitor.isNativePlatform()) {
+      setIsWebcamOpen(true);
+      return;
+    }
+
     try {
       const photo = await getPhoto(mode);
       setImageUrl(photo.dataUrl);
@@ -93,6 +103,12 @@ export function App() {
       }
       setError(err.message || 'Failed to capture or select photo.');
     }
+  };
+
+  const handleWebcamCapture = (photo: PhotoResult) => {
+    setImageUrl(photo.dataUrl);
+    setImageBlob(photo.blob);
+    runDetection(photo.blob, confidence);
   };
 
   const handleLoadSample = async () => {
@@ -261,6 +277,13 @@ export function App() {
       <footer className="w-full border-t border-slate-900 py-4 px-4 text-center text-xs text-slate-600">
         YOLO Face & Person Detector • FastAPI Backend • React + Capacitor Mobile
       </footer>
+
+      {/* Live Webcam Modal for Desktop Web Browsers */}
+      <WebcamModal
+        isOpen={isWebcamOpen}
+        onClose={() => setIsWebcamOpen(false)}
+        onCapture={handleWebcamCapture}
+      />
     </div>
   );
 }
