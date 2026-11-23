@@ -5,6 +5,7 @@ import logging
 from typing import Optional
 from dotenv import load_dotenv
 import requests
+from PIL import Image, ImageOps
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -110,16 +111,8 @@ def health_check():
 @app.post("/detect", summary="Detect objects using Ultralytics YOLO model")
 async def detect(
     file: UploadFile = File(..., description="Image file to detect"),
-    conf: float = Form(0.25, description="Confidence threshold between 0.05 and 1.0", ge=0.05, le=1.0)
+    conf: float = Form(0.25, description="Confidence threshold between 0.01 and 1.0", ge=0.01, le=1.0)
 ):
-    # Validate uploaded file format
-    if not file.content_type or not file.content_type.startswith("image/"):
-        logger.warning(f"Rejected non-image file with content-type: {file.content_type}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Uploaded file must be an image (received '{file.content_type}')."
-        )
-
     # Read uploaded image bytes
     try:
         image_bytes = await file.read()
@@ -135,6 +128,38 @@ async def detect(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Uploaded file is empty."
         )
+
+    # Preprocess image with Pillow:
+    # 1. Validate it is an actual image
+    # 2. Correct orientation using EXIF (essential for mobile selfies/portraits)
+    # 3. Convert RGBA/Palette/HEIC/etc. to clean RGB JPEG
+    # 4. Scale down massive multi-megapixel images to max 1600px for fast cloud inference
+    try:
+        pil_img = Image.open(io.BytesIO(image_bytes))
+        transposed = ImageOps.exif_transpose(pil_img)
+        if transposed is not None:
+            pil_img = transposed
+
+        if pil_img.mode != "RGB":
+            pil_img = pil_img.convert("RGB")
+
+        max_dim = max(pil_img.width, pil_img.height)
+        if max_dim > 1600:
+            scale = 1600.0 / max_dim
+            new_size = (int(pil_img.width * scale), int(pil_img.height * scale))
+            pil_img = pil_img.resize(new_size, Image.Resampling.LANCZOS)
+
+        out_buf = io.BytesIO()
+        pil_img.save(out_buf, format="JPEG", quality=90)
+        image_bytes = out_buf.getvalue()
+    except Exception as img_err:
+        logger.warning(f"Pillow image preprocessing warning: {img_err}")
+        # If Pillow fails to open, verify content-type
+        if file.content_type and not file.content_type.startswith("image/"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Uploaded file could not be parsed as an image (type: '{file.content_type}')."
+            )
 
     # Load and clean credentials
     reload_env()
@@ -159,7 +184,7 @@ async def detect(
     }
 
     files = {
-        "file": (file.filename or "image.jpg", io.BytesIO(image_bytes), file.content_type or "image/jpeg")
+        "file": ("image.jpg", io.BytesIO(image_bytes), "image/jpeg")
     }
 
     data = {

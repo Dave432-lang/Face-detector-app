@@ -10,23 +10,28 @@ interface HeaderProps {
 
 export const Header: FC<HeaderProps> = ({ health, checkingHealth, onRefreshHealth }) => {
   return (
-    <header className="w-full bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 py-3 sticky top-0 z-30">
-      <div className="max-w-5xl mx-auto flex items-center justify-between">
+    <header
+      className="w-full bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 pb-3 sticky top-0 z-30 transition-all"
+      style={{
+        paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+      }}
+    >
+      <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
         {/* Brand */}
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <ScanFace className="w-6 h-6 text-slate-950 stroke-[2.5]" />
+        <div className="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
+            <ScanFace className="w-5 h-5 sm:w-6 sm:h-6 text-slate-950 stroke-[2.5]" />
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-white tracking-tight flex items-center gap-1.5 leading-tight">
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base md:text-lg font-bold text-white tracking-tight leading-tight truncate">
               YOLO Face & Person Detector
             </h1>
-            <p className="text-xs text-slate-400">Ultralytics Cloud Detection</p>
+            <p className="text-[11px] sm:text-xs text-slate-400 truncate">Ultralytics Cloud Detection</p>
           </div>
         </div>
 
         {/* Status Indicator */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 shrink-0">
           {checkingHealth ? (
             <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs text-slate-400">
               <RefreshCw className="w-3 h-3 animate-spin text-cyan-400" />

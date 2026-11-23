@@ -16,22 +16,26 @@ export async function getPhoto(mode: 'camera' | 'photos'): Promise<PhotoResult> 
   if (isNative) {
     try {
       const photo = await Camera.getPhoto({
-        quality: 90,
+        quality: 85,
         allowEditing: false,
         resultType: CameraResultType.Uri,
         source: mode === 'camera' ? CameraSource.Camera : CameraSource.Photos,
+        correctOrientation: true, // Fix orientation for iPhone selfies & portraits
+        width: 1600,              // Downscale massive photos for faster, reliable detection
+        height: 1600,
       });
 
       if (!photo.webPath) {
         throw new Error('No image captured from device.');
       }
 
-      // Convert webPath into Blob
+      // Fetch the file and guarantee a clean image/jpeg blob
       const response = await fetch(photo.webPath);
-      const blob = await response.blob();
+      const rawBlob = await response.blob();
+      const jpegBlob = new Blob([await rawBlob.arrayBuffer()], { type: 'image/jpeg' });
 
       return {
-        blob,
+        blob: jpegBlob,
         dataUrl: photo.webPath,
       };
     } catch (err: any) {

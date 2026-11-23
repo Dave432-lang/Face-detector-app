@@ -165,7 +165,7 @@ export const DetectionCanvas: FC<DetectionCanvasProps> = ({
       <canvas
         ref={canvasRef}
         onClick={handleCanvasClick}
-        className="max-w-full max-h-[65vh] w-auto h-auto object-contain rounded-xl cursor-pointer transition-transform"
+        className="max-w-full max-h-[48vh] sm:max-h-[60vh] w-auto h-auto object-contain rounded-xl cursor-pointer transition-transform"
       />
     </div>
   );

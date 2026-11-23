@@ -76,7 +76,6 @@ export function App() {
 
   const handleConfidenceChange = (newConf: number) => {
     setConfidence(newConf);
-    // If we have an existing image, allow quick re-detect on confidence change
     if (imageBlob) {
       runDetection(imageBlob, newConf);
     }
@@ -85,7 +84,7 @@ export function App() {
   const handleCapture = async (mode: 'camera' | 'photos') => {
     setError(null);
 
-    // If running in a web browser and "Take Photo" is clicked, open the live webcam modal!
+    // If running in a web browser and "Take Photo" is clicked, open the live webcam modal
     if (mode === 'camera' && !Capacitor.isNativePlatform()) {
       setIsWebcamOpen(true);
       return;
@@ -98,7 +97,6 @@ export function App() {
       await runDetection(photo.blob, confidence);
     } catch (err: any) {
       if (err.message && err.message.includes('cancelled')) {
-        // User closed camera/picker quietly
         return;
       }
       setError(err.message || 'Failed to capture or select photo.');
@@ -137,7 +135,14 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+    <div
+      className="min-h-screen flex flex-col bg-slate-950 text-slate-100"
+      style={{
+        paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+      }}
+    >
       {/* Top Header */}
       <Header
         health={health}
@@ -146,16 +151,16 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-5">
+      <main className="flex-1 max-w-4xl w-full mx-auto p-3.5 sm:p-6 flex flex-col gap-4 sm:gap-5">
         {/* Input Action Controls (Mobile-First Prominent Buttons) */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <button
             type="button"
             disabled={loading}
             onClick={() => handleCapture('photos')}
-            className="flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-slate-950 font-bold text-sm sm:text-base shadow-lg shadow-emerald-950/40 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="flex items-center justify-center gap-2 py-3 px-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-slate-950 font-bold text-sm sm:text-base shadow-lg shadow-emerald-950/40 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <Upload className="w-5 h-5 stroke-[2.5]" />
+            <Upload className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             <span>Upload Photo</span>
           </button>
 
@@ -163,9 +168,9 @@ export function App() {
             type="button"
             disabled={loading}
             onClick={() => handleCapture('camera')}
-            className="flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-sm sm:text-base shadow-lg shadow-cyan-950/40 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="flex items-center justify-center gap-2 py-3 px-3.5 rounded-2xl bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-slate-950 font-bold text-sm sm:text-base shadow-lg shadow-cyan-950/40 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <Camera className="w-5 h-5 stroke-[2.5]" />
+            <Camera className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             <span>Take Photo</span>
           </button>
         </div>
@@ -201,24 +206,24 @@ export function App() {
         )}
 
         {/* Display Canvas or Empty State */}
-        <div className="relative min-h-[300px] flex flex-col items-center justify-center">
+        <div className="relative min-h-[250px] flex flex-col items-center justify-center">
           {/* Loading Overlay */}
           {loading && (
             <div className="absolute inset-0 z-20 bg-slate-950/85 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center border border-slate-800 shadow-2xl">
-              <div className="relative w-16 h-16 mb-4">
+              <div className="relative w-14 h-14 mb-3">
                 <div className="absolute inset-0 rounded-full border-4 border-slate-800"></div>
                 <div className="absolute inset-0 rounded-full border-4 border-cyan-500 border-t-transparent animate-spin"></div>
                 <Sparkles className="w-6 h-6 text-cyan-400 absolute inset-0 m-auto animate-pulse" />
               </div>
-              <h3 className="text-base font-bold text-white mb-1">Detecting People…</h3>
+              <h3 className="text-base font-bold text-white mb-1">Detecting…</h3>
               <p className="text-xs text-slate-400 max-w-sm">
-                Waking up model… first request may take up to 60 seconds (cold start).
+                Sending image to Ultralytics model…
               </p>
             </div>
           )}
 
           {imageUrl ? (
-            <div className="w-full flex flex-col gap-4">
+            <div className="w-full flex flex-col gap-3.5">
               <div className="flex items-center justify-between px-1">
                 <span className="text-xs text-slate-400 font-medium">Detection Preview</span>
                 <button
@@ -249,13 +254,13 @@ export function App() {
             </div>
           ) : (
             /* Empty State */
-            <div className="w-full border-2 border-dashed border-slate-800 rounded-3xl p-8 sm:p-12 flex flex-col items-center justify-center text-center bg-slate-900/30">
-              <div className="w-16 h-16 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-slate-400 mb-4 shadow-inner">
-                <Camera className="w-8 h-8 text-slate-500" />
+            <div className="w-full border-2 border-dashed border-slate-800 rounded-3xl p-6 sm:p-12 flex flex-col items-center justify-center text-center bg-slate-900/30">
+              <div className="w-14 h-14 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-slate-400 mb-3 shadow-inner">
+                <Camera className="w-7 h-7 text-slate-500" />
               </div>
 
-              <h2 className="text-lg font-bold text-white mb-1">No Photo Selected</h2>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-md mb-6">
+              <h2 className="text-base sm:text-lg font-bold text-white mb-1">No Photo Selected</h2>
+              <p className="text-xs sm:text-sm text-slate-400 max-w-md mb-5 leading-relaxed">
                 Choose a photo from your gallery, snap a fresh picture with your camera, or try our sample image below.
               </p>
 
@@ -274,8 +279,8 @@ export function App() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-slate-900 py-4 px-4 text-center text-xs text-slate-600">
-        YOLO Face & Person Detector • FastAPI Backend • React + Capacitor Mobile
+      <footer className="w-full border-t border-slate-900/80 py-3 px-4 text-center text-[11px] text-slate-600">
+        YOLO Face & Person Detector • Cloud Detection
       </footer>
 
       {/* Live Webcam Modal for Desktop Web Browsers */}
