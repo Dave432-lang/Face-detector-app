@@ -11,12 +11,12 @@ interface HeaderProps {
 export const Header: FC<HeaderProps> = ({ health, checkingHealth, onRefreshHealth }) => {
   return (
     <header
-      className="w-full bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 pb-3 sticky top-0 z-30 transition-all"
+      className="w-full bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 pb-3.5 sticky top-0 z-30 transition-all shadow-md"
       style={{
-        paddingTop: 'max(16px, env(safe-area-inset-top, 16px))',
+        paddingTop: 'max(58px, calc(env(safe-area-inset-top, 54px) + 8px))',
       }}
     >
-      <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
+      <div className="max-w-4xl mx-auto flex items-center justify-between gap-2.5">
         {/* Brand */}
         <div className="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">

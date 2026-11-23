@@ -138,7 +138,7 @@ export function App() {
     <div
       className="min-h-screen flex flex-col bg-slate-950 text-slate-100"
       style={{
-        paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))',
+        paddingBottom: 'max(36px, env(safe-area-inset-bottom, 36px))',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
         paddingRight: 'env(safe-area-inset-right, 0px)',
       }}
