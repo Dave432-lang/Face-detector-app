@@ -70,6 +70,58 @@ function extractBox(rawBox: any): BoundingBox | null {
 }
 
 /**
+ * Normalizes and enhances bounding box framing for face and person detections.
+ * On close-up selfies, YOLO models often detect upper facial features (forehead down to nose bridge)
+ * resulting in a truncated bounding box with height/width < 1.20.
+ * This helper extends the box downwards to natural portrait head proportions (1.28:1)
+ * to ensure the mouth, jawline, and chin are fully framed.
+ */
+export function normalizeFaceBox(
+  box: BoundingBox,
+  name: string,
+  imgWidth: number,
+  imgHeight: number
+): BoundingBox {
+  let { x1, y1, x2, y2 } = box;
+
+  // Handle normalized coordinates (0.0 to 1.0) if returned by model
+  if (x2 <= 1.01 && y2 <= 1.01 && (x2 > 0 || y2 > 0)) {
+    x1 = x1 * imgWidth;
+    y1 = y1 * imgHeight;
+    x2 = x2 * imgWidth;
+    y2 = y2 * imgHeight;
+  }
+
+  // Constrain within image boundaries
+  x1 = Math.max(0, Math.min(imgWidth, x1));
+  y1 = Math.max(0, Math.min(imgHeight, y1));
+  x2 = Math.max(0, Math.min(imgWidth, x2));
+  y2 = Math.max(0, Math.min(imgHeight, y2));
+
+  let width = x2 - x1;
+  let height = y2 - y1;
+
+  if (width <= 0 || height <= 0) {
+    return { x1, y1, x2, y2 };
+  }
+
+  const lowerName = name.toLowerCase();
+  const isFaceOrPerson =
+    lowerName.includes('david') ||
+    lowerName.includes('face') ||
+    lowerName.includes('person');
+
+  // If the detection is a face/person and is truncated vertically (e.g. selfie cutting off at nose),
+  // extend y2 downward to encompass the entire jawline and chin (target ratio height:width ≈ 1.28)
+  if (isFaceOrPerson && height / width < 1.20) {
+    const targetHeight = width * 1.28;
+    y2 = Math.min(imgHeight, y1 + targetHeight);
+  }
+
+  return { x1, y1, x2, y2 };
+}
+
+/**
  * Robustly parses Ultralytics detection response into structured DetectionItem array
  */
 export function parseUltralyticsResponse(data: any): { detections: DetectionItem[]; speed?: SpeedMetrics } {

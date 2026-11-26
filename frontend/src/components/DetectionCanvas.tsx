@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { FC, MouseEvent } from 'react';
 import type { DetectionItem } from '../types';
+import { normalizeFaceBox } from '../utils/detection';
 
 interface DetectionCanvasProps {
   imageUrl: string;
@@ -59,22 +60,12 @@ export const DetectionCanvas: FC<DetectionCanvasProps> = ({
 
     detections.forEach((det) => {
       const isSelected = selectedDetectionId === det.id;
-      let { x1, y1, x2, y2 } = det.box;
+      
+      // Normalize and adapt face bounding box to guarantee full portrait framing (forehead down to chin)
+      const adjustedBox = normalizeFaceBox(det.box, det.name, canvas.width, canvas.height);
+      det.box = adjustedBox; // Keep in sync for click handling and summary
 
-      // Handle normalized coordinates (0.0 to 1.0) if returned by model
-      if (x2 <= 1.01 && y2 <= 1.01 && (x2 > 0 || y2 > 0)) {
-        x1 = x1 * canvas.width;
-        y1 = y1 * canvas.height;
-        x2 = x2 * canvas.width;
-        y2 = y2 * canvas.height;
-      }
-
-      // Constrain within image boundaries
-      x1 = Math.max(0, Math.min(canvas.width, x1));
-      y1 = Math.max(0, Math.min(canvas.height, y1));
-      x2 = Math.max(0, Math.min(canvas.width, x2));
-      y2 = Math.max(0, Math.min(canvas.height, y2));
-
+      const { x1, y1, x2, y2 } = adjustedBox;
       const width = x2 - x1;
       const height = y2 - y1;
 
